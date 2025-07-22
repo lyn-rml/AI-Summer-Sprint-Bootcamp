@@ -117,7 +117,7 @@ Improvement requirements:
 Please provide the improved version with proper email formatting including subject line if missing.
 """
     return prompt
-def improve_email(
+def rebuild_given_email(
     draft: str,
     tone: Literal['professional', 'friendly'] = 'professional',
     length: Literal['short', 'medium', 'long'] = 'medium',
