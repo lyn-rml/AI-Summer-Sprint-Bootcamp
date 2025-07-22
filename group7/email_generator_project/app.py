@@ -41,8 +41,17 @@ def generate():
 def improve():
     old_email = request.form['original_email']
     improved = rebuild_given_email(old_email)
-    tone = request.form.get('tone', 'friendly')
+    tone = request.form.get('tone', 'professional')
+    length = request.form.get('length','medium')
+    
     idea = request.form['idea']
+
+    improved_text = rebuild_email(
+        draft = old_email,
+        tone = tone, 
+        length = length
+    )
+    
     # Save improved version
     save_email(
     idea='Project update email '+idea,
