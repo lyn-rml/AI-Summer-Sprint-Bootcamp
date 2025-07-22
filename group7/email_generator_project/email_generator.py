@@ -1,6 +1,7 @@
 import google.generativeai as genai
 import os
 from typing import Literal
+import openai
 
 def generate_email(
     description: str,
@@ -130,20 +131,33 @@ def improve_email(
         draft (str): Original email draft to improve
         tone (str): 'professional' or 'friendly'
         length (str): 'short', 'medium', or 'long'
-        api_key (str): Google Gemini API key. If None, tries to get from GEMINI_API_KEY env variable
+        api_key (str): OpenAI API key. If None, tries to get from OPENAI_API_KEY env variable
     
     Returns:
         str: Improved email content
     """
 
     if api_key is None:
-        api_key = os.getenv('GEMINI_API_KEY')
+        api_key = os.getenv('OPENAI_API_KEY')
         if not api_key:
-            raise ValueError("API key is required. Set GEMINI_API_KEY environment variable or pass api_key parameter")
+            raise ValueError("API key is required. Set OPENAI_API_KEY environment variable or pass api_key parameter")
+    
+    client = openai.OpenAI(api_key = api_key)
+    
+    #genai.configure(api_key=api_key)
+    #model = genai.GenerativeModel('gemini-1.5-flash')
 
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
-
+    tone_instructions = {
+        'professional': 'more formal, business-appropriate, and respectful',
+        'friendly': 'warmer, more casual but still polite, and personable'
+    }
+    
+    length_instructions = {
+        'short': 'more concise and brief',
+        'medium': 'moderate length with good detail',
+        'long': 'more detailed and comprehensive'
+    }
+    
     prompt = f"""
 Please improve the following email draft to make it {'more formal and business-appropriate' if tone == 'professional' else 'warmer and more casual but polite'} and {'more concise and brief' if length == 'short' else 'moderate length with good detail' if length == 'medium' else 'more detailed and comprehensive'}.
 
@@ -161,10 +175,14 @@ Provide the improved version with proper email formatting including subject line
 """
 
     try:
-        response = model.generate_content(prompt)
-        return response.text
+        response = client.chat.completions.create(
+            model = madel_name or 'gpt-3.5-turbo',
+            messages = [{"role": "user", "content":prompt}],
+            temperature = 0.8,
+            max_tokens = 600)
+        return response.choices[0].message.content
     except Exception as e:
         return f"Error improving email: {str(e)}"
 # Set your API key as a function property (convenient way)
-generate_email.api_key = "AIzaSyAZf036xdFOtalMYLqgF7ZibMRU5O2TkVU"
+#generate_email.api_key = "AIzaSyAZf036xdFOtalMYLqgF7ZibMRU5O2TkVU"
 
