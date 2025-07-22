@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect
-from utils.email_generator import generate_email, improve_email
+from utils.email_generator import generate_email, rebuild_given_email
 
 from models.database import save_email, get_all_emails
 
@@ -38,7 +38,7 @@ def generate():
 @app.route('/improve', methods=['POST'])
 def improve():
     old_email = request.form['original_email']
-    improved = improve_email(old_email)
+    improved = rebuild_given_email(old_email)
 
     # Save improved version
     save_email(idea='Improved email', tone='N/A', generated=old_email, improved=improved)
