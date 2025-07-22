@@ -1,0 +1,18 @@
+[
+    {
+        "id": "b5691322-2ea9-47a7-9b67-648473059847",
+        "timestamp": "2025-07-22 15:24:40",
+        "idea": "thanks someone to dinner ",
+        "tone": "friendly",
+        "generated": "Subject: Thanks for dinner last night!\n\nHi [Name],\n\nIt was so lovely catching up and having dinner with you last night! The food was delicious, and I really enjoyed our conversation. Thanks again for your hospitality.\n\nBest regards,\n[Sender]\n",
+        "improved": ""
+    },
+    {
+        "id": "296f5932-e7b6-4bd2-a412-413d6ccdb143",
+        "timestamp": "2025-07-22 15:24:49",
+        "idea": "Project update email",
+        "tone": "Formal",
+        "generated": "Subject: Thanks for dinner last night!\r\n\r\nHi [Name],\r\n\r\nIt was so lovely catching up and having dinner with you last night! The food was delicious, and I really enjoyed our conversation. Thanks again for your hospitality.\r\n\r\nBest regards,\r\n[Sender]\r\n",
+        "improved": "Subject: Following Up on Last Night's Dinner\n\nDear [Name],\n\nIt was a pleasure having dinner with you last night. I enjoyed the excellent food and our conversation immensely. Thank you for your gracious hospitality.\n\nSincerely,\n\n[Sender]"
+    }
+]

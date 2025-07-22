@@ -16,32 +16,40 @@ def index():
 def generate():
     idea = request.form['idea']
     tone = request.form.get('tone', 'friendly')
-    length = request.form.get('length', 'medium')  # NEW: get length from form
+    length = request.form.get('length', 'medium')  # Optional, used by your generator
 
-    # Pass all needed params to your email generator
+    # Generate the email text
     generated = generate_email(idea, tone, length)
 
-    # Save email data including length
-    save_email({
-        'idea': idea,
-        'tone': tone,
-        'length': length,       # NEW: store length
-        'generated': generated,
-        'improved': ""
-    })
+    # Save the data (pass each argument individually)
+    save_email(
+        idea=idea,
+        tone=tone,
+        generated=generated,
+        improved=""  # Empty for now
+    )
 
-    # Reload page with result and history
+    # Load emails to show on page
     emails = get_all_emails()
+
+    # Render result
     return render_template('index.html', result=generated, emails=emails)
+
 
 
 @app.route('/improve', methods=['POST'])
 def improve():
     old_email = request.form['original_email']
     improved = rebuild_given_email(old_email)
-
+    tone = request.form.get('tone', 'friendly')
+    idea = request.form['idea']
     # Save improved version
-    save_email(idea='Improved email', tone='N/A', generated=old_email, improved=improved)
+    save_email(
+    idea='Project update email '+idea,
+    tone=tone,
+    generated=old_email,
+    improved=improved
+)
 
     email_history = get_all_emails()
     return render_template('index.html', emails=email_history, improved=improved, original=old_email)
@@ -50,8 +58,5 @@ if __name__ == '__main__':
     app.run(debug=True)
 
 from dotenv import load_dotenv
-import os
-import openai
-
 load_dotenv()  # load environment variables from .env (if you use .env)
 

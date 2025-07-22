@@ -117,7 +117,15 @@ Improvement requirements:
 Please provide the improved version with proper email formatting including subject line if missing.
 """
     return prompt
-def rebuild_given_email(                    #this improve the email given by the llm its not complete yet
+import os
+import google.generativeai as genai
+from typing import Literal
+
+import os
+from typing import Literal
+import google.generativeai as genai
+
+def rebuild_given_email(
     draft: str,
     tone: Literal['professional', 'friendly'] = 'professional',
     length: Literal['short', 'medium', 'long'] = 'medium',
@@ -125,46 +133,55 @@ def rebuild_given_email(                    #this improve the email given by the
 ) -> str:
     """
     Improve an existing email draft based on tone and length preferences.
-    
+
     Args:
         draft (str): Original email draft to improve
         tone (str): 'professional' or 'friendly'
         length (str): 'short', 'medium', or 'long'
-        api_key (str): Google Gemini API key. If None, tries to get from GEMINI_API_KEY env variable
-    
+        api_key (str): Google Gemini API key. If None, tries from generate_email.api_key or GEMINI_API_KEY
+
     Returns:
         str: Improved email content
     """
 
+    if not draft.strip():
+        return "⚠️ The draft email cannot be empty."
+
     if api_key is None:
-        api_key = os.getenv('GEMINI_API_KEY')
-        if not api_key:
-            raise ValueError("API key is required. Set GEMINI_API_KEY environment variable or pass api_key parameter")
-
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
-
-    prompt = f"""
-Please improve the following email draft to make it {'more formal and business-appropriate' if tone == 'professional' else 'warmer and more casual but polite'} and {'more concise and brief' if length == 'short' else 'moderate length with good detail' if length == 'medium' else 'more detailed and comprehensive'}.
-
-Original draft:
-{draft}
-
-Improvement requirements:
-- Adjust tone accordingly
-- Adjust length accordingly
-- Improve clarity and structure
-- Fix grammar and formatting issues
-- Keep the original message intact
-
-Provide the improved version with proper email formatting including subject line if missing.
-"""
+        # Try to get from generate_email.api_key (if it exists)
+        api_key = getattr(generate_email, 'api_key', None)
+        if api_key is None:
+            api_key = os.getenv("GEMINI_API_KEY")
+            if not api_key:
+                raise ValueError("❌ API key is required. Set generate_email.api_key, GEMINI_API_KEY environment variable, or pass api_key parameter.")
 
     try:
-        response = model.generate_content(prompt)
-        return response.text
-    except Exception as e:
-        return f"Error improving email: {str(e)}"
-# Set your API key as a function property (convenient way)
-generate_email.api_key = "AIzaSyAZf036xdFOtalMYLqgF7ZibMRU5O2TkVU"
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel("gemini-1.5-flash")
 
+        prompt = f"""
+Improve the following email:
+
+Tone: {"Formal and business-appropriate" if tone == "professional" else "Friendly and warm"}
+Length: {"Concise" if length == "short" else "Moderate detail" if length == "medium" else "Detailed and comprehensive"}
+
+Email:
+\"\"\"{draft}\"\"\"
+
+Instructions:
+- Keep the original message and intent.
+- Fix grammar, punctuation, and clarity.
+- Apply the tone and adjust length as specified.
+- Add or adjust subject line if needed.
+
+Return only the improved email in well-formatted text.
+"""
+
+        response = model.generate_content(prompt)
+        return response.text.strip()
+
+    except Exception as e:
+        return f"❌ Error improving email: {str(e)}"
+
+# Optional: you can set a default API key like this
+generate_email.api_key = "AIzaSyAZf036xdFOtalMYLqgF7ZibMRU5O2TkVU"
