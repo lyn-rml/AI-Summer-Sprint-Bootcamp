@@ -1,35 +1,47 @@
-# Fork the repo
+# AI Email Generator
 
-Go to https://github.com/code-with-serah/ai-summer-sprint-bootcamp
-Click the “Fork” button in the top-right
+## Project Overview
 
-Clone your fork (your version of the repo)
+This is a simple web app that generates emails based on user input using OpenAI's GPT models. Users enter a general idea and select tone and length to receive a generated email, with options to improve it and view email history.
 
-Replace YOUR-USERNAME with your GitHub username
+---
 
-```
-git clone https://github.com/YOUR-USERNAME/ai-summer-sprint-bootcamp.git
-cd ai-summer-sprint-bootcamp
-```
+## Features
 
-Upload your project files into this folder
+- Input a general idea for the email
+- Select tone: Friendly, Professional, Urgent
+- Select email length: Short, Medium, Long
+- Generate emails powered by OpenAI's GPT API
+- Improve generated emails with a single click
+- Save and view previously generated emails
 
-Stage and commit your changes
+---
 
-```
-git add .
-git commit -m "Group Project #3: (your project name)"
-```
-Push to your fork
+## Setup Instructions
 
-```
-git push origin main
-```
+### 1. Clone the repository
 
-Create a Pull Request
+```bash
+git clone <your-repo-url>
+cd <your-repo-folder>
 
-Go to your fork on GitHub
+python -m venv venv
+.\venv\Scripts\Activate.ps1
 
-Click “Compare & pull request”
+pip install -r requirements.txt
 
-Add a description, then click “Create pull request”
+Obtain an OpenAI API Key
+Sign up at OpenAI and create an account
+
+Go to the API keys page: OpenAI API Keys
+
+Generate a new secret key and copy it
+
+create a .env file with the following content:
+
+OPENAI_API_KEY=your-api-key-here
+
+Run the application
+python app.py
+Open your browser and go to http://127.0.0.1:5000/
+
