@@ -20,23 +20,52 @@
       border-radius: 5px;
       border: 1px solid #dee2e6;
     }
+    .mode-selector {
+      background: #e9ecef;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    .mode-btn {
+      width: 48%;
+      margin: 1%;
+    }
+    .mode-btn.active {
+      background-color: #0d6efd;
+      color: white;
+    }
+    .form-section {
+      display: none;
+    }
+    .form-section.active {
+      display: block;
+    }
   </style>
 </head>
 <body>
-
 <div class="container">
   <h1 class="mb-4 text-center">📧 Smart Email Generator</h1>
+  
+  <!-- Mode Selection -->
+  <div class="mode-selector text-center">
+    <button type="button" class="btn btn-outline-primary mode-btn active" onclick="switchMode('generate')">
+      🆕 Generate New Email
+    </button>
+    <button type="button" class="btn btn-outline-primary mode-btn" onclick="switchMode('improve')">
+      ✨ Improve Drafted Email
+    </button>
+  </div>
 
-  <!-- Email Form -->
-  <div class="card">
+  <!-- Generate Email Form -->
+  <div class="card form-section active" id="generate-section">
     <div class="card-header">Create a New Email</div>
     <div class="card-body">
       <form method="POST" action="/generate">
+        <input type="hidden" name="action" value="generate">
         <div class="mb-3">
           <label for="idea" class="form-label">General Idea</label>
-          <textarea class="form-control" name="idea" id="idea" rows="3" required></textarea>
+          <textarea class="form-control" name="idea" id="idea" rows="3" placeholder="Describe what you want to communicate in the email..." required></textarea>
         </div>
-
         <div class="row mb-3">
           <div class="col-md-6">
             <label class="form-label" for="tone">Tone</label>
@@ -46,7 +75,6 @@
               <option value="urgent">Urgent</option>
             </select>
           </div>
-
           <div class="col-md-6">
             <label class="form-label" for="length">Length</label>
             <select class="form-select" name="length" id="length">
@@ -56,8 +84,41 @@
             </select>
           </div>
         </div>
-
         <button type="submit" class="btn btn-primary">Generate Email</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Improve Email Form -->
+  <div class="card form-section" id="improve-section">
+    <div class="card-header">Improve Your Drafted Email</div>
+    <div class="card-body">
+      <form method="POST" action="/improve_drafted_email">
+        <input type="hidden" name="action" value="improve_drafted_email">
+        <div class="mb-3">
+          <label for="draft" class="form-label">Paste Your Email Draft</label>
+          <textarea class="form-control" name="idea" id="idea" rows="8" placeholder="Paste your existing email draft here for improvement..." required></textarea>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label" for="improve_tone">Tone</label>
+            <select class="form-select" name="tone" id="improve_tone">
+              <option value="friendly">Friendly</option>
+              <option value="professional">Professional</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="improve_length">Length</label>
+            <select class="form-select" name="length" id="improve_length">
+              <option value="short">Short</option>
+              <option value="medium" selected>Medium</option>
+              <option value="long">Long</option>
+            </select>
+          </div>
+        </div>
+       
+        <button type="submit" class="btn btn-warning">Improve Email</button>
       </form>
     </div>
   </div>
@@ -106,8 +167,18 @@
       {% endif %}
     </div>
   </div>
-
 </div>
 
+<script>
+function switchMode(mode) {
+  // Remove active class from all buttons and sections
+  document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.form-section').forEach(section => section.classList.remove('active'));
+  
+  // Add active class to selected button and section
+  event.target.classList.add('active');
+  document.getElementById(mode + '-section').classList.add('active');
+}
+</script>
 </body>
 </html>
