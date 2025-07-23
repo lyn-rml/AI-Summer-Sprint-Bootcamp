@@ -19,7 +19,7 @@ def generate():
     length = request.form.get('length', 'medium')  # Optional, used by your generator
 
     # Generate the email text
-    generated = generate_email(idea, tone, length)
+    generated = generate_email(idea, tone, length,'generate')
 
     # Save the data (pass each argument individually)
     save_email(
@@ -35,7 +35,28 @@ def generate():
     # Render result
     return render_template('index.html', result=generated, emails=emails)
 
-
+@app.route('/improve_drafted_email', methods=['POST'])
+def improve_drafted_email():
+    idea = request.form['idea']
+    tone = request.form.get('tone', 'friendly')
+    length = request.form.get('length', 'medium') 
+    
+    # Improve the drafted email
+    improved = generate_email(idea, tone, length, 'improve')
+    
+    # Save the data (you might want to create a separate function for drafted emails)
+    save_email(
+        idea=idea,
+        tone=tone,
+        generated=improved,
+        improved=""  # This is the final version
+    )
+    
+    # Load emails to show on page
+    emails = get_all_emails()
+    
+    # Render result
+    return render_template('index.html', result=improved, emails=emails)
 
 @app.route('/improve', methods=['POST'])
 def improve():
