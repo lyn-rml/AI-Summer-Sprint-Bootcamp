@@ -1,2 +1,3 @@
 Flask
-openai
+google-generativeai
+python-dotenv

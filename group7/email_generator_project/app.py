@@ -1,83 +1,227 @@
-from flask import Flask, render_template, request, redirect
-from utils.email_generator import generate_email, rebuild_given_email
+from flask import Flask, render_template, request, flash, jsonify, redirect, url_for
+from dotenv import load_dotenv
+import os
 
+# Load environment variables first
+load_dotenv()
+
+from utils.email_generator import EmailGenerator, generate_email, improve_email
 from models.database import save_email, get_all_emails
 
-
 app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')
+
+# Initialize email generator once
+try:
+    email_generator = EmailGenerator()
+except ValueError as e:
+    print(f"Warning: {e}")
+    email_generator = None
 
 @app.route('/', methods=['GET'])
 def index():
-    # Load email history to show on the same page
-    email_history = get_all_emails()
-    return render_template('index.html', emails=email_history)
+    """Main page with email history"""
+    try:
+        email_history = get_all_emails()
+        return render_template('index.html', emails=email_history)
+    except Exception as e:
+        flash(f"Error loading emails: {str(e)}", 'error')
+        return render_template('index.html', emails=[])
 
 @app.route('/generate', methods=['POST'])
 def generate():
-    idea = request.form['idea']
-    tone = request.form.get('tone', 'friendly')
-    length = request.form.get('length', 'medium')  # Optional, used by your generator
-
-    # Generate the email text
-    generated = generate_email(idea, tone, length,'generate')
-
-    # Save the data (pass each argument individually)
-    save_email(
-        idea=idea,
-        tone=tone,
-        generated=generated,
-        improved=""  # Empty for now
-    )
-
-    # Load emails to show on page
-    emails = get_all_emails()
-
-    # Render result
-    return render_template('index.html', result=generated, emails=emails)
-
-@app.route('/improve_drafted_email', methods=['POST'])
-def improve_drafted_email():
-    idea = request.form['idea']
-    tone = request.form.get('tone', 'friendly')
-    length = request.form.get('length', 'medium') 
-    
-    # Improve the drafted email
-    improved = generate_email(idea, tone, length, 'improve')
-    
-    # Save the data (you might want to create a separate function for drafted emails)
-    save_email(
-        idea=idea,
-        tone=tone,
-        generated=improved,
-        improved=""  # This is the final version
-    )
-    
-    # Load emails to show on page
-    emails = get_all_emails()
-    
-    # Render result
-    return render_template('index.html', result=improved, emails=emails)
+    """Generate a new email from description"""
+    try:
+        # Get form data
+        idea = request.form.get('idea', '').strip()
+        tone = request.form.get('tone', 'professional')
+        length = request.form.get('length', 'medium')
+        
+        # Validate input
+        if not idea:
+            flash('Please provide an email description', 'error')
+            return redirect('/')
+        
+        # Generate email
+        if email_generator:
+            generated = email_generator.generate_email(idea, tone, length)
+        else:
+            generated = generate_email(idea, tone, length)
+        
+        # Check for errors in generation
+        if generated.startswith('Error'):
+            flash(generated, 'error')
+            return redirect('/')
+        
+        # Save to database
+        save_email(
+            idea=idea,
+            tone=tone,
+            generated=generated,
+            improved=""
+        )
+        
+        flash('Email generated successfully!', 'success')
+        
+        # Load updated email history
+        emails = get_all_emails()
+        return render_template('index.html', result=generated, emails=emails)
+        
+    except Exception as e:
+        flash(f'Error generating email: {str(e)}', 'error')
+        return redirect('/')
 
 @app.route('/improve', methods=['POST'])
 def improve():
-    old_email = request.form['original_email']
-    improved = rebuild_given_email(old_email)
-    tone = request.form.get('tone', 'friendly')
-    idea = request.form['idea']
-    # Save improved version
-    save_email(
-    idea='Project update email '+idea,
-    tone=tone,
-    generated=old_email,
-    improved=improved
-)
+    """Improve an existing email draft"""
+    try:
+        # Get form data
+        original_email = request.form.get('original_email', '').strip()
+        tone = request.form.get('tone', 'professional')
+        length = request.form.get('length', 'medium')
+        idea = request.form.get('idea', 'Email improvement')
+        
+        # Validate input
+        if not original_email:
+            flash('Please provide an email to improve', 'error')
+            return redirect('/')
+        
+        # Improve email
+        if email_generator:
+            improved = email_generator.improve_email(original_email, tone, length)
+        else:
+            improved = improve_email(original_email, tone, length)
+        
+        # Check for errors in improvement
+        if improved.startswith('Error'):
+            flash(improved, 'error')
+            return redirect('/')
+        
+        # Save to database
+        save_email(
+            idea=f'Improved: {idea}',
+            tone=tone,
+            generated=original_email,
+            improved=improved
+        )
+        
+        flash('Email improved successfully!', 'success')
+        
+        # Load updated email history
+        email_history = get_all_emails()
+        return render_template('index.html', 
+                             emails=email_history, 
+                             improved=improved, 
+                             original=original_email)
+        
+    except Exception as e:
+        flash(f'Error improving email: {str(e)}', 'error')
+        return redirect('/')
 
-    email_history = get_all_emails()
-    return render_template('index.html', emails=email_history, improved=improved, original=old_email)
+@app.route('/api/generate', methods=['POST'])
+def api_generate():
+    """API endpoint for generating emails"""
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('idea'):
+            return jsonify({'error': 'Email description is required'}), 400
+        
+        idea = data['idea']
+        tone = data.get('tone', 'professional')
+        length = data.get('length', 'medium')
+        
+        # Generate email
+        if email_generator:
+            generated = email_generator.generate_email(idea, tone, length)
+        else:
+            generated = generate_email(idea, tone, length)
+        
+        if generated.startswith('Error'):
+            return jsonify({'error': generated}), 500
+        
+        return jsonify({
+            'success': True,
+            'email': generated,
+            'parameters': {
+                'idea': idea,
+                'tone': tone,
+                'length': length
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/improve', methods=['POST'])
+def api_improve():
+    """API endpoint for improving emails"""
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('email'):
+            return jsonify({'error': 'Email content is required'}), 400
+        
+        original_email = data['email']
+        tone = data.get('tone', 'professional')
+        length = data.get('length', 'medium')
+        
+        # Improve email
+        if email_generator:
+            improved = email_generator.improve_email(original_email, tone, length)
+        else:
+            improved = improve_email(original_email, tone, length)
+        
+        if improved.startswith('Error'):
+            return jsonify({'error': improved}), 500
+        
+        return jsonify({
+            'success': True,
+            'original': original_email,
+            'improved': improved,
+            'parameters': {
+                'tone': tone,
+                'length': length
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/history')
+def history():
+    """View email history"""
+    try:
+        emails = get_all_emails()
+        return render_template('history.html', emails=emails)
+    except Exception as e:
+        flash(f'Error loading email history: {str(e)}', 'error')
+        return redirect('/')
+
+@app.errorhandler(404)
+def not_found(error):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return render_template('500.html'), 500
+
+# Health check endpoint
+@app.route('/health')
+def health_check():
+    return jsonify({
+        'status': 'healthy',
+        'email_generator': email_generator is not None
+    })
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
-from dotenv import load_dotenv
-load_dotenv()  # load environment variables from .env (if you use .env)
-
+    # Check if API key is configured
+    if not os.getenv('GEMINI_API_KEY'):
+        print("Warning: GEMINI_API_KEY not found in environment variables")
+    
+    # Run app
+    app.run(
+        debug=os.getenv('FLASK_DEBUG', 'False').lower() == 'true',
+        host=os.getenv('FLASK_HOST', '127.0.0.1'),
+        port=int(os.getenv('FLASK_PORT', 5000))
+    )
