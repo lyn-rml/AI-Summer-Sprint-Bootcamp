@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash, jsonify, redirect, url_for
+from flask import Flask, render_template, request, flash, redirect, url_for
 from dotenv import load_dotenv
 import os
 
@@ -118,76 +118,6 @@ def improve():
         flash(f'Error improving email: {str(e)}', 'error')
         return redirect('/')
 
-@app.route('/api/generate', methods=['POST'])
-def api_generate():
-    """API endpoint for generating emails"""
-    try:
-        data = request.get_json()
-        
-        if not data or not data.get('idea'):
-            return jsonify({'error': 'Email description is required'}), 400
-        
-        idea = data['idea']
-        tone = data.get('tone', 'professional')
-        length = data.get('length', 'medium')
-        
-        # Generate email
-        if email_generator:
-            generated = email_generator.generate_email(idea, tone, length)
-        else:
-            generated = generate_email(idea, tone, length)
-        
-        if generated.startswith('❌ Error'):
-            return jsonify({'error': generated}), 500
-        
-        return jsonify({
-            'success': True,
-            'email': generated,
-            'parameters': {
-                'idea': idea,
-                'tone': tone,
-                'length': length
-            }
-        })
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/improve', methods=['POST'])
-def api_improve():
-    """API endpoint for improving emails"""
-    try:
-        data = request.get_json()
-        
-        if not data or not data.get('email'):
-            return jsonify({'error': 'Email content is required'}), 400
-        
-        original_email = data['email']
-        tone = data.get('tone', 'professional')
-        length = data.get('length', 'medium')
-        
-        # Improve email
-        if email_generator:
-            improved = email_generator.improve_email(original_email, tone, length)
-        else:
-            improved = improve_email(original_email, tone, length)
-        
-        if improved.startswith('❌ Error'):
-            return jsonify({'error': improved}), 500
-        
-        return jsonify({
-            'success': True,
-            'original': original_email,
-            'improved': improved,
-            'parameters': {
-                'tone': tone,
-                'length': length
-            }
-        })
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
 @app.route('/history')
 def history():
     """View email history"""
@@ -205,14 +135,6 @@ def not_found(error):
 @app.errorhandler(500)
 def internal_error(error):
     return render_template('500.html'), 500
-
-# Health check endpoint
-@app.route('/health')
-def health_check():
-    return jsonify({
-        'status': 'healthy',
-        'email_generator': email_generator is not None
-    })
 
 if __name__ == '__main__':
     # Check if API key is configured
