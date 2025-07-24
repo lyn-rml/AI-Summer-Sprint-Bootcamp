@@ -9,7 +9,7 @@ from utils.email_generator import EmailGenerator, generate_email, improve_email
 from models.database import save_email, get_all_emails
 
 app = Flask(__name__)
-
+app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')
 # Initialize email generator once
 try:
     email_generator = EmailGenerator()
@@ -136,3 +136,14 @@ def internal_error(error):
     return render_template('500.html'), 500
 
 
+if __name__ == '__main__':
+    # Check if API key is configured
+    if not os.getenv('MISTRAL_API_KEY'):
+        print("Warning: MISTRAL_API_KEY not found in environment variables")
+    
+    # Run app
+    app.run(
+        debug=os.getenv('FLASK_DEBUG', 'False').lower() == 'true',
+        host=os.getenv('FLASK_HOST', '127.0.0.1'),
+        port=int(os.getenv('FLASK_PORT', 5000))
+    )
