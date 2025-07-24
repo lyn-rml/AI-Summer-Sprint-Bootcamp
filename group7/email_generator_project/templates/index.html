@@ -326,7 +326,7 @@
               <span class="badge bg-{{ 'primary' if email.tone == 'professional' else 'success' }}">{{ email.tone }}</span>
             </div>
             <strong class="d-block mb-1">{{ email.idea[:50] }}...</strong>
-            <small class="text-muted d-block">{{ email.generated[:80] }}...</small>
+            <small class="text-muted d-block">{{ email.generated }}...</small>
             {% if email.improved %}
             <small class="text-success">✨ Improved version available</small>
             {% endif %}

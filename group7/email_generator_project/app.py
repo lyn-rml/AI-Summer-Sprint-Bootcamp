@@ -49,7 +49,7 @@ def generate():
             generated = generate_email(idea, tone, length)
         
         # Check for errors in generation
-        if generated.startswith('Error'):
+        if generated.startswith('❌ Error'):
             flash(generated, 'error')
             return redirect('/')
         
@@ -93,7 +93,7 @@ def improve():
             improved = improve_email(original_email, tone, length)
         
         # Check for errors in improvement
-        if improved.startswith('Error'):
+        if improved.startswith('❌ Error'):
             flash(improved, 'error')
             return redirect('/')
         
@@ -137,7 +137,7 @@ def api_generate():
         else:
             generated = generate_email(idea, tone, length)
         
-        if generated.startswith('Error'):
+        if generated.startswith('❌ Error'):
             return jsonify({'error': generated}), 500
         
         return jsonify({
@@ -172,7 +172,7 @@ def api_improve():
         else:
             improved = improve_email(original_email, tone, length)
         
-        if improved.startswith('Error'):
+        if improved.startswith('❌ Error'):
             return jsonify({'error': improved}), 500
         
         return jsonify({
@@ -216,8 +216,8 @@ def health_check():
 
 if __name__ == '__main__':
     # Check if API key is configured
-    if not os.getenv('GEMINI_API_KEY'):
-        print("Warning: GEMINI_API_KEY not found in environment variables")
+    if not os.getenv('MISTRAL_API_KEY'):
+        print("Warning: MISTRAL_API_KEY not found in environment variables")
     
     # Run app
     app.run(

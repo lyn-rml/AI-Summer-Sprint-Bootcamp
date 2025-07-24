@@ -1,174 +1,124 @@
-import google.generativeai as genai
+import requests
+import json
 import os
 from typing import Literal, Optional
 
 class EmailGenerator:
-    """Simple email generator and improver using Google Gemini"""
-    
-    def __init__(self, api_key: Optional[str] = None):
+    """Email generator and improver using Mistral API"""
+
+    def __init__(self, api_key: Optional[str] = None, model: str = "mistral-small-latest"):
         """
-        Initialize with API key
-        
+        Initialize the email generator using Mistral API
+
         Args:
-            api_key: Google Gemini API key. If None, uses GEMINI_API_KEY env variable
+            api_key (str): Your Mistral API key
+            model (str): Model name (e.g. mistral-small-latest, mistral-medium-latest)
         """
-        self.api_key = api_key or os.getenv('GEMINI_API_KEY')
+        self.api_key = api_key or os.getenv('MISTRAL_API_KEY')
         if not self.api_key:
-            raise ValueError("API key required. Set GEMINI_API_KEY environment variable or pass api_key")
-        
-        genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
-    
+            raise ValueError("API key required. Set MISTRAL_API_KEY environment variable or pass api_key")
+
+        self.api_base = "https://api.mistral.ai/v1/chat/completions"
+        self.model = model
+
+    def _generate(self, prompt: str) -> str:
+        try:
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.api_key}"
+            }
+            
+            data = {
+                "model": self.model,
+                "messages": [
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.7,
+                "max_tokens": 1000
+            }
+            
+            response = requests.post(self.api_base, headers=headers, json=data, timeout=30)
+            
+            if response.status_code != 200:
+                return f"❌ Error: API request failed with status {response.status_code}"
+            
+            result = response.json()
+            return result['choices'][0]['message']['content'].strip()
+            
+        except Exception as e:
+            return f"❌ Error: {e}"
+
     def generate_email(
         self,
         description: str,
         tone: Literal['professional', 'friendly'] = 'professional',
         length: Literal['short', 'medium', 'long'] = 'medium'
     ) -> str:
-        """
-        Generate a new email from description
-        
-        Args:
-            description: What the email should be about
-            tone: Email tone - 'professional' or 'friendly'
-            length: Email length - 'short', 'medium', or 'long'
-            
-        Returns:
-            Generated email content
-        """
-        
         tone_style = {
-            'professional': 'formal, business-appropriate, respectful',
-            'friendly': 'warm, casual but polite, conversational'
+            'professional': 'formal and business-like',
+            'friendly': 'warm and conversational'
         }
-        
-        length_guide = {
-            'short': 'brief and concise (2-4 sentences)',
-            'medium': 'moderate length (1-2 paragraphs)', 
-            'long': 'detailed and comprehensive (3-4 paragraphs)'
-        }
-        
-        prompt = f"""
-Write an email that is {tone_style[tone]} and {length_guide[length]}.
 
+        length_guide = {
+            'short': '2-4 sentences',
+            'medium': '1-2 paragraphs',
+            'long': '3-4 detailed paragraphs'
+        }
+
+        prompt = f"""
+Write an email that is {tone_style[tone]} and has a length of {length_guide[length]}.
 Topic: {description}
 
-Requirements:
-- Include subject line
-- Proper greeting and closing
-- Clear, well-structured content
-- {tone_style[tone]} tone throughout
+Structure:
+- Subject line
+- Greeting
+- Body (based on tone and length)
+- Closing and signature
 
-Format:
-Subject: [subject line]
-
-[email body with greeting, content, and closing]
+Respond with the full email only.
 """
-        
-        return self._generate_content(prompt)
-    
+        return self._generate(prompt)
+
     def improve_email(
         self,
         draft: str,
         tone: Literal['professional', 'friendly'] = 'professional',
         length: Literal['short', 'medium', 'long'] = 'medium'
     ) -> str:
-        """
-        Improve an existing email draft
-        
-        Args:
-            draft: Original email to improve
-            tone: Desired tone - 'professional' or 'friendly'
-            length: Desired length - 'short', 'medium', or 'long'
-            
-        Returns:
-            Improved email content
-        """
-        
         if not draft.strip():
-            return "Error: Email draft cannot be empty"
-        
-        tone_adjustment = {
-            'professional': 'more formal and business-appropriate',
-            'friendly': 'warmer and more conversational while remaining polite'
-        }
-        
-        length_adjustment = {
-            'short': 'more concise and to-the-point',
-            'medium': 'well-balanced with appropriate detail',
-            'long': 'more detailed and comprehensive'
-        }
-        
-        prompt = f"""
-Improve this email draft:
+            return "❌ Error: Draft email is empty."
 
-Original Email:
+        prompt = f"""
+Improve the following draft email:
+
 {draft}
 
-Make it {tone_adjustment[tone]} and {length_adjustment[length]}.
+Make it:
+- More {tone}
+- {length} in length
+- Clear, grammatically correct, and well-formatted
 
-Improvements needed:
-- Fix grammar, spelling, and punctuation
-- Improve clarity and flow
-- Adjust tone to be {tone_adjustment[tone]}
-- Adjust length to be {length_adjustment[length]}
-- Keep the original message and intent
-- Ensure proper email formatting
-
-Return only the improved email.
+Keep the message intent the same. Provide only the improved email.
 """
-        
-        return self._generate_content(prompt)
-    
-    def _generate_content(self, prompt: str) -> str:
-        """Generate content using Gemini model with error handling"""
-        try:
-            response = self.model.generate_content(prompt)
-            return response.text.strip()
-        except Exception as e:
-            return f"Error generating email: {str(e)}"
+        return self._generate(prompt)
 
 
-# Convenience functions for backward compatibility
-def generate_email(
-    description: str,
-    tone: Literal['professional', 'friendly'] = 'professional',
-    length: Literal['short', 'medium', 'long'] = 'medium',
-    api_key: Optional[str] = None
-) -> str:
-    """Generate email using function interface"""
-    generator = EmailGenerator(api_key)
-    return generator.generate_email(description, tone, length)
+# Function-style API
+def generate_email(description: str, tone="professional", length="medium", api_key=None):
+    return EmailGenerator(api_key).generate_email(description, tone, length)
+
+def improve_email(draft: str, tone="professional", length="medium", api_key=None):
+    return EmailGenerator(api_key).improve_email(draft, tone, length)
 
 
-def improve_email(
-    draft: str,
-    tone: Literal['professional', 'friendly'] = 'professional', 
-    length: Literal['short', 'medium', 'long'] = 'medium',
-    api_key: Optional[str] = None
-) -> str:
-    """Improve email using function interface"""
-    generator = EmailGenerator(api_key)
-    return generator.improve_email(draft, tone, length)
-
-
-# Example usage:
+# Example usage
 if __name__ == "__main__":
-    # Using class interface
-    email_gen = EmailGenerator()
-    
-    # Generate new email
-    new_email = email_gen.generate_email(
-        "Follow up on project meeting", 
-        tone='professional', 
-        length='medium'
-    )
-    
-    # Improve existing email
-    draft = "hey can we meet tomorrow about the project?"
-    improved = email_gen.improve_email(draft, tone='professional', length='medium')
-    
-    print("Generated Email:")
-    print(new_email)
-    print("\nImproved Email:")
-    print(improved)
+    os.environ["MISTRAL_API_KEY"] = "your-mistral-api-key-here"
+
+    gen = EmailGenerator()
+
+    generated = gen.generate_email("Update client on project delay", tone="professional", length="medium")
+    print("📧 Generated Email:\n", generated)
+
+    improved = gen.improve_email("hey just wanted to say it's late sorry", tone="professional", length="medium")
+    print("\n✅ Improved Email:\n", improved)
