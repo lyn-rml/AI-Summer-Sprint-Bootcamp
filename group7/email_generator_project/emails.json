@@ -102,5 +102,13 @@
         "tone": "friendly",
         "generated": "**Subject:** Excited to Chat About Your New Car!\r\n\r\n**Hi [Tobai],**\r\n\r\nI hope you're doing well! I\u2019ve been thinking about upgrading my car, and I\u2019d love to hear your thoughts on what might be a great fit for me. You\u2019ve always had such great taste in vehicles, so I figured you\u2019d be the perfect person to ask. Any recommendations or insights you can share would be much appreciated!\r\n\r\nLet me know when you\u2019re free to chat\u2014I\u2019d love to hear your take. Thanks in advance!\r\n\r\n**Best,**\r\n[Your Name]",
         "improved": "**Subject:** Excited to Hear Your Car Recommendations!\n\n**Hi [Tobai],**\n\nI hope you're doing great! I\u2019ve been thinking about upgrading my car and, knowing your fantastic taste in vehicles, I\u2019d love to get your advice. You always seem to find the perfect fit\u2014so if you have any recommendations or insights, I\u2019d really appreciate them!\n\nLet me know when you\u2019re free for a quick chat\u2014I\u2019d love to hear your thoughts. Thanks so much in advance!\n\n**Best,**\n[Your Name]"
+    },
+    {
+        "id": "167ff0e3-3ab8-43eb-a4ae-2d89a321d9cf",
+        "timestamp": "2025-07-24 22:31:19",
+        "idea": "say hello for my  friend and that i missed him",
+        "tone": "professional",
+        "generated": "**Subject:** A Quick Hello and Warm Greetings\n\nDear [Recipient's Name],\n\nI hope this email finds you well. I wanted to take a moment to say hello and extend my warmest regards. I\u2019ve been thinking about [Friend's Name] and realized how much I\u2019ve missed our conversations and shared experiences. It\u2019s been a while since we last caught up, and I\u2019d love to reconnect soon\u2014whether over a call, coffee, or a casual meeting.\n\nPlease pass along my best wishes to [Friend's Name], and let me know if there\u2019s a convenient time for us to chat. I\u2019d truly enjoy hearing how you\u2019ve both been.\n\nWarm regards,\n[Your Full Name]\n[Your Position/Title, if applicable]\n[Your Contact Information, if needed]",
+        "improved": ""
     }
 ]

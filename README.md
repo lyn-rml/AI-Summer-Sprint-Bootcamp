@@ -1,47 +1,51 @@
-# AI Email Generator
+Smart Email Generator
+A Flask-based web application that uses AI to generate and improve professional emails. Built with Mistral API for intelligent email composition and enhancement.
+-> Features
+Email Generation: Create emails from simple descriptions
+Email Improvement: Enhance existing email drafts
+Tone Control: Choose between professional and friendly tones
+Length Options: Short, medium, or long email formats
+Email History: Track and view previously generated emails
+Modern UI: Responsive design with Bootstrap and custom styling
+Copy to Clipboard: Easy copying of generated emails
 
-## Project Overview
+Prerequisites
+Python 
+Mistral API key 
 
-This is a simple web app that generates emails based on user input using OpenAI's GPT models. Users enter a general idea and select tone and length to receive a generated email, with options to improve it and view email history.
+Installation
+Install dependencies
+bashpip install -r requirements.txt
 
----
-
-## Features
-
-- Input a general idea for the email
-- Select tone: Friendly, Professional, Urgent
-- Select email length: Short, Medium, Long
-- Generate emails powered by OpenAI's GPT API
-- Improve generated emails with a single click
-- Save and view previously generated emails
-
----
-
-## Setup Instructions
-
-### 1. Clone the repository
-
-```bash
-git clone <your-repo-url>
-cd <your-repo-folder>
-
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-
-pip install -r requirements.txt
-
-Obtain an OpenAI API Key
-Sign up at OpenAI and create an account
-
-Go to the API keys page: OpenAI API Keys
-
-Generate a new secret key and copy it
-
-create a .env file with the following content:
-
-OPENAI_API_KEY=your-api-key-here
+Set up environment variables
+Create a .env file in the root directory
+echo "MISTRAL_API_KEY=your-mistral-api-key-here" > .env
 
 Run the application
 python app.py
-Open your browser and go to http://127.0.0.1:5000/
 
+Open your browser
+Navigate to http://localhost:5000
+
+Usage
+Generating New Emails
+
+Select "Generate New Email" mode
+Describe what you want to communicate
+Choose tone (Professional/Friendly)
+Select length (Short/Medium/Long)
+Click "Generate Email"
+
+Improving Email Drafts
+
+Select "Improve Email Draft" mode
+Paste your existing email draft
+Choose desired tone and length
+Click "Improve Email"
+
+Example Descriptions
+
+"Follow up with client about project timeline"
+"Thank team for completing the quarterly report"
+"Request vacation time for next month"
+"Introduce new team member to the department"
